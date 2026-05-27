@@ -27,6 +27,9 @@ hs_err_pid*
 
 HELP.md
 target/
+
+# Maven shade plugin generates this alongside the shaded jar
+dependency-reduced-pom.xml
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

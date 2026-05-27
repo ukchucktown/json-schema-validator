@@ -1,4 +1,4 @@
-package io.camunda.example;
+package io.camunda.connector.jsonschema;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

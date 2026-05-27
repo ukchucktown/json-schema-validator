@@ -1,8 +1,8 @@
 {
   "$schema" : "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
-  "name" : "My Connector Template",
-  "id" : "io.camunda.example.template.v1",
-  "description" : "This is the description of my connector example.",
+  "name" : "JSON Schema Validator",
+  "id" : "io.camunda.connector.json-schema-validator.v1",
+  "description" : "Validates a JSON value against a JSON Schema.",
   "metadata" : {
     "keywords" : [ ]
   },
@@ -17,17 +17,14 @@
     "value" : "bpmn:ServiceTask"
   },
   "groups" : [ {
-    "id" : "document",
-    "label" : "Document"
+    "id" : "input",
+    "label" : "Input"
   }, {
-    "id" : "message",
-    "label" : "Message"
+    "id" : "schema",
+    "label" : "Schema"
   }, {
     "id" : "operation",
     "label" : "Operation"
-  }, {
-    "id" : "authentication",
-    "label" : "Authentication"
   }, {
     "id" : "connector",
     "label" : "Connector"
@@ -42,149 +39,138 @@
     "label" : "Retries"
   } ],
   "properties" : [ {
-    "value" : "io.camunda:example:1",
+    "value" : "io.camunda:json-schema-validator:1",
     "binding" : {
       "property" : "type",
       "type" : "zeebe:taskDefinition"
     },
     "type" : "Hidden"
   }, {
-    "id" : "processDocument:additionalDocuments",
-    "label" : "Additional documents",
-    "description" : "Optional list of further documents processed alongside the primary one.",
-    "optional" : true,
+    "id" : "validate:data",
+    "label" : "Data",
+    "description" : "The JSON value to validate. A FEEL expression returning the value, or a literal.",
+    "optional" : false,
+    "value" : "=data",
     "feel" : "optional",
-    "group" : "document",
+    "group" : "input",
     "binding" : {
-      "name" : "additionalDocuments",
+      "name" : "data",
       "type" : "zeebe:input"
     },
     "condition" : {
       "allMatch" : [ {
         "property" : "operation",
-        "equals" : "processDocument",
+        "equals" : "validate",
         "type" : "simple"
       } ]
     },
     "type" : "String"
   }, {
-    "id" : "echo:message",
-    "label" : "Message",
+    "id" : "validate:schemaSource",
+    "label" : "Schema source",
+    "description" : "Where the JSON Schema comes from.",
     "optional" : false,
+    "value" : "inline",
     "constraints" : {
       "notEmpty" : true
     },
-    "feel" : "optional",
-    "group" : "message",
+    "group" : "schema",
     "binding" : {
-      "name" : "message",
+      "name" : "schemaSource",
       "type" : "zeebe:input"
     },
     "condition" : {
       "allMatch" : [ {
         "property" : "operation",
-        "equals" : "echo",
+        "equals" : "validate",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "Dropdown",
+    "choices" : [ {
+      "name" : "Inline",
+      "value" : "inline"
+    }, {
+      "name" : "URL",
+      "value" : "url"
+    } ]
+  }, {
+    "id" : "validate:schema",
+    "label" : "Schema",
+    "description" : "Inline JSON Schema. A FEEL expression returning the schema object, or a pasted JSON literal.",
+    "optional" : true,
+    "feel" : "optional",
+    "group" : "schema",
+    "binding" : {
+      "name" : "schema",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "validate",
+        "type" : "simple"
+      }, {
+        "property" : "validate:schemaSource",
+        "equals" : "inline",
         "type" : "simple"
       } ]
     },
     "type" : "Text"
   }, {
+    "id" : "validate:schemaUrl",
+    "label" : "Schema URL",
+    "description" : "HTTP(S) URL pointing to the JSON Schema document.",
+    "optional" : true,
+    "feel" : "optional",
+    "group" : "schema",
+    "binding" : {
+      "name" : "schemaUrl",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "validate",
+        "type" : "simple"
+      }, {
+        "property" : "validate:schemaSource",
+        "equals" : "url",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "validate:allowExternalRefs",
+    "label" : "Allow external $ref resolution",
+    "description" : "If on, $refs to other documents are followed. Default off — same-document refs only.",
+    "optional" : true,
+    "value" : false,
+    "feel" : "static",
+    "group" : "schema",
+    "binding" : {
+      "name" : "allowExternalRefs",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "validate",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "Boolean"
+  }, {
     "id" : "operation",
     "label" : "Operation",
     "description" : "The operation to execute",
-    "value" : "addTwoNumbers",
+    "value" : "validate",
     "group" : "operation",
     "binding" : {
       "key" : "operation",
       "type" : "zeebe:taskHeader"
     },
-    "type" : "Dropdown",
-    "choices" : [ {
-      "name" : "Add two numbers",
-      "value" : "addTwoNumbers"
-    }, {
-      "name" : "Echo message",
-      "value" : "echo"
-    }, {
-      "name" : "Process document",
-      "value" : "processDocument"
-    } ]
-  }, {
-    "id" : "addTwoNumbers:A",
-    "label" : "A",
-    "group" : "operation",
-    "binding" : {
-      "name" : "A",
-      "type" : "zeebe:input"
-    },
-    "condition" : {
-      "allMatch" : [ {
-        "property" : "operation",
-        "equals" : "addTwoNumbers",
-        "type" : "simple"
-      } ]
-    },
-    "type" : "Number"
-  }, {
-    "id" : "addTwoNumbers:B",
-    "label" : "B",
-    "group" : "operation",
-    "binding" : {
-      "name" : "B",
-      "type" : "zeebe:input"
-    },
-    "condition" : {
-      "allMatch" : [ {
-        "property" : "operation",
-        "equals" : "addTwoNumbers",
-        "type" : "simple"
-      } ]
-    },
-    "type" : "Number"
-  }, {
-    "id" : "echo:authentication.user",
-    "label" : "Username",
-    "description" : "The username for authentication",
-    "optional" : false,
-    "constraints" : {
-      "notEmpty" : true
-    },
-    "feel" : "optional",
-    "group" : "authentication",
-    "binding" : {
-      "name" : "authentication.user",
-      "type" : "zeebe:input"
-    },
-    "condition" : {
-      "allMatch" : [ {
-        "property" : "operation",
-        "equals" : "echo",
-        "type" : "simple"
-      } ]
-    },
-    "type" : "String"
-  }, {
-    "id" : "echo:authentication.token",
-    "label" : "Token",
-    "description" : "The token for authentication",
-    "optional" : false,
-    "constraints" : {
-      "notEmpty" : true
-    },
-    "feel" : "optional",
-    "group" : "authentication",
-    "binding" : {
-      "name" : "authentication.token",
-      "type" : "zeebe:input"
-    },
-    "condition" : {
-      "allMatch" : [ {
-        "property" : "operation",
-        "equals" : "echo",
-        "type" : "simple"
-      } ]
-    },
-    "type" : "String"
+    "type" : "Hidden"
   }, {
     "id" : "version",
     "label" : "Version",
@@ -200,7 +186,7 @@
     "id" : "id",
     "label" : "ID",
     "description" : "ID of the element template",
-    "value" : "io.camunda.example.template.v1",
+    "value" : "io.camunda.connector.json-schema-validator.v1",
     "group" : "connector",
     "binding" : {
       "key" : "elementTemplateId",
@@ -211,6 +197,7 @@
     "id" : "resultVariable",
     "label" : "Result variable",
     "description" : "Name of variable to store the response in",
+    "value" : "validationResult",
     "group" : "output",
     "binding" : {
       "key" : "resultVariable",
@@ -264,6 +251,6 @@
     "type" : "String"
   } ],
   "icon" : {
-    "contents" : "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTgiIHdpZHRoPSIxOCIgdmlld0JveD0iMCAwIDEwIDEwIiBzaGFwZS1yZW5kZXJpbmc9Imdlb21ldHJpY1ByZWNpc2lvbiI+PHRpdGxlPlNsYWNrPC90aXRsZT48ZyBmaWxsPSJub25lIj48cGF0aCBkPSJNMCwwIEwwLDEwIEwxMCwxMCBMMTAsMCB6IiBmaWxsPSIjZWNiMTJmIi8+PC9nPjwvc3ZnPg=="
+    "contents" : "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgICAgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiB2aWV3Qm94PSIwIDAgMzIgMzIiCiAgICAgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMUEzQTZFIiBzdHJva2Utd2lkdGg9IjIuNCIKICAgICBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiCiAgICAgc2hhcGUtcmVuZGVyaW5nPSJnZW9tZXRyaWNQcmVjaXNpb24iPgogIDx0aXRsZT5KU09OIFNjaGVtYSBWYWxpZGF0b3I8L3RpdGxlPgogIDwhLS0gbGVmdCBjdXJseSBicmFjZSB7IC0tPgogIDxwYXRoIGQ9Ik0xMSA1IFEgNyA1IDcgOSBWIDE0IFEgNyAxNiA1IDE2IFEgNyAxNiA3IDE4IFYgMjMgUSA3IDI3IDExIDI3Ii8+CiAgPCEtLSByaWdodCBjdXJseSBicmFjZSB9IC0tPgogIDxwYXRoIGQ9Ik0yMSA1IFEgMjUgNSAyNSA5IFYgMTQgUSAyNSAxNiAyNyAxNiBRIDI1IDE2IDI1IDE4IFYgMjMgUSAyNSAyNyAyMSAyNyIvPgogIDwhLS0gY2hlY2sgbWFyayBiZXR3ZWVuIHRoZSBicmFjZXMgLS0+CiAgPHBhdGggZD0iTTEyIDE2LjUgTCAxNC41IDE5IEwgMjAgMTMiLz4KPC9zdmc+Cg=="
   }
 }

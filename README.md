@@ -59,7 +59,7 @@ cd <your-connector>
 mvn clean package
 
 # 3. start the local runtime (uses an embedded Camunda for testing)
-mvn -Dexec.mainClass=io.camunda.example.LocalConnectorRuntime test-compile exec:java
+mvn -Dexec.mainClass=io.camunda.connector.LocalConnectorRuntime test-compile exec:java
 ```
 
 Then upload `element-templates/my-connector.json` to your Modeler, drop a service task, and pick
@@ -80,7 +80,7 @@ The SDK supports two styles. **Default to the Operations API** unless you have a
 | When you'd pick it | Most new connectors. Good fit when the connector wraps an API with several actions (HTTP-style: GET / POST / DELETE) | Single-purpose connectors, or when migrating an older connector and the rewrite isn't worth it |
 
 This template uses the Operations API — see
-[`MyConnector`](src/main/java/io/camunda/example/MyConnector.java). For a real-world example
+[`MyConnector`](src/main/java/io/camunda/connector/MyConnector.java). For a real-world example
 covering more patterns, look at the
 [CSV Connector](https://github.com/camunda/connectors/blob/main/connectors/csv/src/main/java/io/camunda/connector/csv/CsvConnector.java).
 
@@ -125,19 +125,19 @@ starts the connector runtime in-process and points it at a Zeebe gateway you sup
 
 **macOS / Linux:**
 ```bash
-mvn test-compile exec:java -Dexec.mainClass=io.camunda.example.LocalConnectorRuntime \
+mvn test-compile exec:java -Dexec.mainClass=io.camunda.connector.LocalConnectorRuntime \
   -Dexec.classpathScope=test
 ```
 
 **Windows (PowerShell):**
 ```powershell
-mvn test-compile exec:java "-Dexec.mainClass=io.camunda.example.LocalConnectorRuntime" `
+mvn test-compile exec:java "-Dexec.mainClass=io.camunda.connector.LocalConnectorRuntime" `
   "-Dexec.classpathScope=test"
 ```
 
 **Windows (cmd):**
 ```cmd
-mvn test-compile exec:java -Dexec.mainClass=io.camunda.example.LocalConnectorRuntime -Dexec.classpathScope=test
+mvn test-compile exec:java -Dexec.mainClass=io.camunda.connector.LocalConnectorRuntime -Dexec.classpathScope=test
 ```
 
 Configure the Zeebe target in `src/test/resources/application.properties`. Without it, the runtime
@@ -180,9 +180,9 @@ Three layers, all run by `mvn clean verify`:
 
 | Layer | File | Purpose |
 |---|---|---|
-| Unit (no runtime) | [`MyConnectorTest`](src/test/java/io/camunda/example/MyConnectorTest.java) | Happy-path test using `OutboundConnectorContextBuilder` from `connector-runtime-test`. Compiles and passes out-of-the-box. |
-| Unit (no runtime) | [`ProcessDocumentTest`](src/test/java/io/camunda/example/ProcessDocumentTest.java) | Direct method-call tests of `processDocument` — small/large documents, size limits. |
-| Integration | [`MyConnectorIntegrationTest`](src/test/java/io/camunda/example/integration/MyConnectorIntegrationTest.java) | Spins up an embedded Camunda + connector runtime and runs a real BPMN process via `@CamundaSpringProcessTest`. |
+| Unit (no runtime) | [`MyConnectorTest`](src/test/java/io/camunda/connector/MyConnectorTest.java) | Happy-path test using `OutboundConnectorContextBuilder` from `connector-runtime-test`. Compiles and passes out-of-the-box. |
+| Unit (no runtime) | [`ProcessDocumentTest`](src/test/java/io/camunda/connector/ProcessDocumentTest.java) | Direct method-call tests of `processDocument` — small/large documents, size limits. |
+| Integration | [`MyConnectorIntegrationTest`](src/test/java/io/camunda/connector/integration/MyConnectorIntegrationTest.java) | Spins up an embedded Camunda + connector runtime and runs a real BPMN process via `@CamundaSpringProcessTest`. |
 
 The minimal pattern for unit-testing an annotations-based connector:
 
@@ -229,8 +229,8 @@ forgetting to set it produces `Operation ID is missing in the job context custom
 - Metadata (`getFileName`, `getContentType`, `getSize`, `getCustomProperties`) is cheap and
   available without reading content; use it for routing decisions.
 
-See [`MyConnector#processDocument`](src/main/java/io/camunda/example/MyConnector.java) and
-[`ProcessDocumentTest`](src/test/java/io/camunda/example/ProcessDocumentTest.java).
+See [`MyConnector#processDocument`](src/main/java/io/camunda/connector/MyConnector.java) and
+[`ProcessDocumentTest`](src/test/java/io/camunda/connector/ProcessDocumentTest.java).
 
 ---
 

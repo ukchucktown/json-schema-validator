@@ -3,10 +3,10 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <name>connector-template</name>
-  <description>Camunda Connector Template</description>
+  <name>json-schema-validator</name>
+  <description>Json Schema Validator Connector</description>
   <groupId>io.camunda.connector</groupId>
-  <artifactId>connector-template</artifactId>
+  <artifactId>json-schema-validator</artifactId>
   <packaging>jar</packaging>
   <version>0.1.0-SNAPSHOT</version>
 
@@ -46,6 +46,37 @@
       <artifactId>element-template-generator-annotations</artifactId>
       <version>${version.connectors}</version>
       <scope>provided</scope>
+    </dependency>
+
+    <!-- Provided by the connector runtime at deploy time. Required on the
+         compile classpath because we hand Jackson types to networknt. -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.21.1</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.networknt</groupId>
+      <artifactId>json-schema-validator</artifactId>
+      <version>1.5.6</version>
+      <exclusions>
+        <!-- The connector runtime provides Jackson at a different minor than
+             networknt's transitive pin; let the runtime's version win. -->
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -130,6 +161,20 @@
             <goals>
               <goal>shade</goal>
             </goals>
+            <configuration>
+              <relocations>
+                <!-- networknt brings its own Jackson; relocate so it cannot
+                     collide with the connector runtime's Jackson. -->
+                <relocation>
+                  <pattern>com.fasterxml.jackson</pattern>
+                  <shadedPattern>io.camunda.connector.jsonschema.shaded.com.fasterxml.jackson</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.networknt</pattern>
+                  <shadedPattern>io.camunda.connector.jsonschema.shaded.com.networknt</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -148,11 +193,11 @@
         <configuration>
           <connectors>
             <connector>
-              <connectorClass>io.camunda.example.MyConnector</connectorClass>
+              <connectorClass>io.camunda.connector.jsonschema.JsonSchemaValidatorConnector</connectorClass>
               <files>
                 <file>
-                  <templateId>io.camunda.example.template.v1</templateId>
-                  <templateFileName>my-connector.json</templateFileName>
+                  <templateId>io.camunda.connector.json-schema-validator.v1</templateId>
+                  <templateFileName>json-schema-validator.json</templateFileName>
                 </file>
               </files>
             </connector>
